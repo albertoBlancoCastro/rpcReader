@@ -67,7 +67,6 @@ dev.dcs.path.rawData                    = [dev.dcs.path.base 'rawData' b];      
 dev.dcs.path.rawDataDat                 = [dev.dcs.path.rawData 'rawDataDat' b];                mkdirOS([dev.dcs.path.rawDataDat],OS,1);mkdirOS([dev.dcs.path.rawDataDat 'done' b],OS,1);
 dev.dcs.path.rawDataMat                 = [dev.dcs.path.rawData 'rawDataMat' b];                mkdirOS([dev.dcs.path.rawDataMat],OS,1);mkdirOS([dev.dcs.path.rawDataMat 'done' b],OS,1);
 dev.dcs.path.data                       = [dev.dcs.path.base 'data' b];                         mkdirOS(dev.dcs.path.data,OS,1);mkdirOS([dev.dcs.path.data 'merge' b],OS,1);                                                   %mkdirOS(dev.dcs.path.data,OS,1);
-#dev.dcs.path.data                       = '';                                                   %mkdirOS(dev.dcs.path.data,OS,1);
 dev.dcs.path.LT                         = [SYS 'lookUpTables' b];                               mkdirOS(dev.dcs.path.LT,OS,1);
 
 
