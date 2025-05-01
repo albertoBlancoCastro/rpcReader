@@ -17,7 +17,7 @@ version             =  varargin{2};
 %2023-04-20   I2C_4      - 2023-04-20T18:28:03; 80:1F:12:59:D4:A9           Implementing a space after date and before the MAC in HV 
 %2023-04-20   I2C_5      - 2023-04-21 00:00:04 493 524 505 520              Implementing a time without T
 %2023-06-06   I2C_6      - Outro .... 
-
+%2025-05-01   I2C_FD     - 2025-05-01 20:03:03                              This is dedicated to read the FrpcHeater Seems to be repeated with I2C_5
 
 try
     
