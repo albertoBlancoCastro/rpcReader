@@ -99,6 +99,17 @@ try
             lastPosition = nan;
             time         = nan;
         end
+    elseif strcmp(version,'I2C_FD')
+        fileName = varargin{3};
+        result = string(5) == '-' & string(8) == '-' & string(14) == ':' & string(17) == ':';
+        if result
+            time   = datenum([str2num(string(1:4)) str2num(string(6:7)) str2num(string(9:10)) str2num(string(12:13)) str2num(string(15:16)) str2num(string(18:19))]);
+            lastPosition = 21;
+        else
+            result       = 0;
+            lastPosition = nan;
+            time         = nan;
+        end
     else
         
         
