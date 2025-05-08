@@ -1,6 +1,7 @@
 function configuration = loadConfiguration(configuration,SYSTEMNAME,HOME,SYS,INTERPRETER,OS)
 
 %%
+devicePos = 1;
 time2Show   = 2*24;
 oneHour     = datenum([0000 00 00 01 00 00])-datenum([0000 00 00 00 00 00]);
 time1       = datenum([2023 01 01 00 00 00]);time2       = datenum([2023 01 08 12 00 00]);
@@ -23,105 +24,30 @@ mkdirOS(SYS,OS,1);
 mkdirOS([SYS 'devices' b],OS,1);
 mkdirOS([SYS 'logs' b],OS,1);
 
-devicePos = 1;
-%%% Devices
-%% HV PS 01    Device 01
-dev = initDevice();
+%%% Devices %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    dev.active                              =    0;
-    dev.name                                = 'HV';
-    dev.subName                             = '01';
-    dev.type                                =   '';
-    dev.subType                             =   '';
-        dev.reportable.active               =    0;
-        
-        dev.path.base                       = [SYS 'devices' b  dev.name  dev.subName b];mkdirOS(dev.path.base,OS,1);    
-        dev.path.data                       = [dev.path.base 'data' b];                              mkdirOS(dev.path.data,OS,1);
-            
-        dev.dcs.active                      =   0;
-        dev.dcs.readable                    =   0;
-        dev.dcs.armed                       =   0;
-         
-        dev.dcs.rAccess.active              =   0;
+%% Device 01     CONTROLLER 01                     
+name                = 'CONTROLER01';                                       %'DeviceName01';                   %This is the name of the device
+IP                  = 'hadesfrpcgas';                                      %'DeviceIP';                       %Device IP. This relay on .ssh/config
+fileExt             = 'GAS11*.log';                                        %'filePatter*.*';                  %File Pattern to match
+remotePath          = '/home/rpcuser/logs/';                               %'/home/rpcuser/logs/';            %Path of the file to read
+dcData2MatScript    = 'procGenericLog';                                    %'procGenericLog';                 %Name of the processing script 
+type                = 'I2C';                                               %'I2C';                            %Format of the timestamp of file to read       
+columns             = 6;                                                   %6;                                %Number of columns to read
+nameFormat          = '******2024-03-01****';                              %'******2024-03-01****';           %Name of the new name. * will be removed
+distributionLT      = 'lookUpTablefRPCController.m';                       %'lookUpTablefRPCController.m';    %Lookuptable of the device
 
-        dev.dcs.rAccess.IP{1}               = SYSTEMNAME;
-        dev.dcs.rAccess.user{1}             = 'rpcuser';
-        dev.dcs.rAccess.key{1}              = '~/.ssh/id_rsa';
-        dev.dcs.rAccess.port{1}             = '22';
-        
-        dev.dcs.rAccess.IP{2}               = SYSTEMNAME;
-        dev.dcs.rAccess.user{2}             = 'rpcuser';
-        dev.dcs.rAccess.key{2}              = '~/.ssh/id_rsa_nopwd';
-        dev.dcs.rAccess.port{2}             = '22';
-        
-        dev.dcs.rAccess.fileExt             = 'hv5*.log';
-        dev.dcs.rAccess.remotePath          = '/home/rpcuser/logs/';
-        
-        dev.dcs.lAccess.active              = 0;
-        dev.dcs.lAccess.fileExt             = '';
-        dev.dcs.lAccess.path                = '';
-        
-        dev.dcs.dcData2MatScript            = 'procMINGOHV';
-        dev.dcs.type                        = '';
-        dev.dcs.columns                     = 16;
-        dev.dcs.nameFormat                  = []; 
-        
-        dev.dcs.distributionLT              = 'lookUpTableHV.m';
-        
-        dev.dcs.path.base                   = [dev.path.data 'dcData' b];                           mkdirOS(dev.dcs.path.base,OS,1);
-        dev.dcs.path.rawData                = [dev.dcs.path.base 'rawData' b];                      mkdirOS(dev.dcs.path.rawData,OS,1);
-        dev.dcs.path.rawDataDat             = [dev.dcs.path.rawData 'rawDataDat' b];                mkdirOS([dev.dcs.path.rawDataDat],OS,1);mkdirOS([dev.dcs.path.rawDataDat 'done' b],OS,1);
-        dev.dcs.path.rawDataMat             = [dev.dcs.path.rawData 'rawDataMat' b];                mkdirOS([dev.dcs.path.rawDataMat],OS,1);mkdirOS([dev.dcs.path.rawDataMat 'done' b],OS,1);
-        dev.dcs.path.data                   = '';                                                   %mkdirOS(dev.dcs.path.data,OS,1);
-        dev.dcs.path.LT                     = [SYS 'lookUpTables' b];  
+[configuration, devicePos] = initReadableDevice({name,IP,fileExt,remotePath,dcData2MatScript,type,columns,nameFormat,distributionLT,configuration,devicePos,SYS,OS});
 
-configuration.dev = dev;
-devicePos = devicePos +1;
+%% Device 02     GASSYSTEM 
+name                = 'GASSYSTEM';                                         %'RPC01';                          %This is the name of the device
+[configuration, devicePos] = initNoReadableDevice({name,configuration,devicePos,SYS,OS});
 
-%% Telescope or full system
- dev = initDevice();
 
-    dev.active                              = 0;
-    dev.name                                = SYSTEMNAME;
-    dev.subName                             = '';
-    dev.type                                = 'all';
-    dev.subType                             = '';
-        dev.reportable.active               = 0;
-        dev.reportable.LT                   = '';
-        dev.reportable.timeElapsed          = time2Show;
-        %dev.reportable.downScaling          = downScaling;
-        dev.path.base                       = [SYS 'devices' b  dev.name  dev.subName b];            mkdirOS(dev.path.base,OS,1);    
-        dev.path.data                       = [dev.path.base 'data' b];                              mkdirOS(dev.path.data,OS,1);
-        dev.path.reporting                  = [dev.path.base 'reporting' b];                         mkdirOS(dev.path.reporting,OS,1);
-            
-        dev.dcs.active                      = 0;
-        dev.dcs.readable                    = 0;
-        dev.dcs.armed                       = 0;
-        
-        dev.dcs.rAccess.active              = 0;
-        dev.dcs.rAccess.IP                  = '';
-        dev.dcs.rAccess.user                = '';
-        dev.dcs.rAccess.key                 = '';
-        dev.dcs.rAccess.port                = '';
-        dev.dcs.rAccess.fileExt             = '';
-        dev.dcs.rAccess.remotePath          = '';
-        dev.dcs.lAccess.active              = 0;
-        dev.dcs.dcData2MatScript            = '';
-        dev.dcs.distributionLT              = '';
-        dev.dcs.path.base                   = [dev.path.data 'dcData' b];                            mkdirOS(dev.dcs.path.base,OS,1);                           
-        dev.dcs.path.rawData                = '';%                           
-        dev.dcs.path.rawDataDat             = '';%                           
-        dev.dcs.path.rawDataMat             = '';%                           
-        dev.dcs.path.data                   = [dev.dcs.path.base 'data' b];                          mkdirOS(dev.dcs.path.data,OS,1);mkdirOS([dev.dcs.path.data 'merge' b],OS,1);
-        dev.dcs.path.LT                     = [SYS 'lookUpTables' b];                                mkdirOS(dev.dcs.path.LT,OS,1);
-    
-        dev.ana.active                      = 0;
-        dev.ana.path.base                   = [dev.path.data 'ana' b];                               mkdirOS(dev.ana.path.base,OS,1);
 
-configuration.dev(devicePos) = dev;
-devicePos = devicePos +1;        
-        
-        
+
+
+
 %% TRB    
 daq = initDAQ(); 
 
