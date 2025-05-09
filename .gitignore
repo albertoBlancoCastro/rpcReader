@@ -1,0 +1,7 @@
+/system/devices/
+/system/logs/
+/system/lookUpTables/
+/system/par/
+/software/conf/data/
+*.asv
+
