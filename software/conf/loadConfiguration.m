@@ -19,6 +19,7 @@ time2Show = [time1 now];
 downScaling = 1;
 %% General information
 configuration.SYSTEMNAME                             = SYSTEMNAME;
+configuration.HOSTNAME                               = HOSTNAME;
 configuration.SYSTEM                                 = SYSTEMNAME;
 configuration.HOME                                   = HOME;
 configuration.SYS                                    = SYS; 
