@@ -15,6 +15,13 @@ time1       = datenum([2023 01 01 00 00 00]);time2       = datenum([2023 01 08 1
 time2Show = [time1 now];
 %time2Show = [now - oneHour*time2Show now];
 
+%%%% This is obsolete has to be done diferently
+name                = SYSTEMNAME;             
+[configuration, devicePos] = initNoReadableDevice({name,configuration,devicePos,SYS,OS});
+telescopePath = [configuration.dev(1).path.data 'ana' b];
+%%%%%%%%%%%%%%%%%%%%%
+
+
 %hours
 downScaling = 1;
 %% General information
