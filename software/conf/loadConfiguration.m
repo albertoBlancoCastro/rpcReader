@@ -1,5 +1,12 @@
-function configuration = loadConfiguration(configuration,SYSTEMNAME,HOME,SYS,INTERPRETER,OS)
+function configuration = loadConfiguration(inputVars)
 
+configuration       = inputVars{1};
+HOSTNAME            = inputVars{2};
+SYSTEMNAME          = inputVars{3};
+HOME                = inputVars{4};
+SYS                 = inputVars{5};
+INTERPRETER         = inputVars{6};
+OS                  = inputVars{7};
 %%
 devicePos = 1;
 time2Show   = 2*24;
