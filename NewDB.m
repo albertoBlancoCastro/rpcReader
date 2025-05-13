@@ -2,7 +2,7 @@
 % script para a criação automática da base de dados
 % don't run
 % INCOMPLETO
-%% Configurações da DB
+%% Configurações da DB - OK
 % alterar o user password
 clear all;
 
@@ -15,7 +15,7 @@ grafanaUserName = 'grafanareader';
 % Caminho e nome do arquivo de saída
 tmpPathOut      = '/tmp/';
 outputFileName  = ['createsDB-' DatabaseName '.sh'];
-%% Load configuration
+%% Load configuration - OK
 
 run('./conf/initConf.m');
 [status, RPCRUNMODE] = system('echo $RPCRUNMODE');
@@ -34,55 +34,63 @@ else
     conf = loadConfiguration({conf,HOSTNAME,SYSTEMNAME,HOME,SYS,INTERPRETER,OS});
 end
 
-%% não funciona  
+%% não funciona  - investigar origem de lookUpTables
+DB = struct('schema', []); % inicializa estrutura
+
 for i = 1:length(conf.dev)
-    dev = conf.dev(i);
+    if isfield(conf.dev(i), "ana") && isfield(conf.dev(i).ana, "lookUpTable")
+        LUT = conf.dev(i).ana.lookUpTable;
 
-    % 1. Verificar se está ativo
-    if ~isfield(dev, 'active') || dev.active == 0
-        continue; % Ignora se não estiver ativo
-    end
-
-    % 2. Verificar se é reportable
-    if ~isfield(dev, 'reportable') || dev.reportable == 0
-        continue; % Ignora se não for para leitura
-    end
-
-    % 3. Verificar se tem lookUpTable
-    if isfield(dev, 'ana') && isfield(dev.ana, 'lookUpTable')
-        LUT = dev.ana.lookUpTable;
-
-        % Exemplo: iterar pelas colunas e extrair schema/tabela
         for col = 1:size(LUT, 2)
-            tableName = LUT{2, col}; % 2ª linha: nome da tabela
-            schema    = LUT{3, col}; % 3ª linha: nome do schema
+            try
+                schemaName = LUT{3, col};  % linha 3: nome do dispositivo (schema)
+                tableName  = LUT{2, col};  % linha 2: nome da variável (tabela)
+                tableType  = "REAL";       % tipo fixo para já
 
-            fprintf('Schema: %s, Tabela: %s\n', schema, tableName);
-            % Aqui podes guardar ou construir a estrutura da base de dados
+                if isempty(schemaName) || isempty(tableName)
+                    continue;
+                end
+
+                % Adiciona à estrutura DB
+                DB = addToDB(DB, schemaName, tableName, tableType);
+
+            catch err
+                fprintf("Erro a processar col %d do device %d: %s\n", col, i, err.message);
+            end
         end
     end
 end
 
 
 
-%% convertê-los no formato necessário
+%% convertê-los no formato necessário - OK
 function DB = addToDB(DB, schemaName, tableName, tableType)
-    idx = find(strcmp({DB.schema.name}, schemaName));
-    if isempty(idx)
-        % Novo schema
-        newSchema.name = schemaName;
-        newSchema.table = struct('name', tableName, 'type', tableType);
-        DB.schema(end+1) = newSchema;
-    else
-        % Verifica duplicados
-        existingTables = {DB.schema(idx).table.name};
-        if ~ismember(tableName, existingTables)
-            DB.schema(idx).table(end+1).name = tableName;
-            DB.schema(idx).table(end).type = tableType;
+    schemaExists = false;
+
+    % Verifica se o schema já existe
+    for s = 1:length(DB.schema)
+        if strcmp(DB.schema(s).name, schemaName)
+            schemaExists = true;
+
+            % Verifica se tabela já existe neste schema
+            tableNames = {DB.schema(s).table.name};
+            if ~ismember(tableName, tableNames)
+                % Adiciona nova tabela
+                newTableIndex = length(DB.schema(s).table) + 1;
+                DB.schema(s).table(newTableIndex).name = tableName;
+                DB.schema(s).table(newTableIndex).type = tableType;
+            end
+
+            return; % já tratou, sai da função
         end
     end
-end
 
+    % Se o schema não existir ainda, cria novo
+    newSchemaIndex = length(DB.schema) + 1;
+    DB.schema(newSchemaIndex).name = schemaName;
+    DB.schema(newSchemaIndex).table(1).name = tableName;
+    DB.schema(newSchemaIndex).table(1).type = tableType;
+end
 
 
 %% %% Criar o arquivo .sh
