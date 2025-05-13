@@ -1,4 +1,7 @@
 % novo - criação de base de dados a partir das configurações 
+% script para a criação automática da base de dados
+% don't run
+% INCOMPLETO
 %% Configurações da DB
 clear all;
 
@@ -11,19 +14,70 @@ grafanaUserName = 'grafanareader';
 % Caminho e nome do arquivo de saída
 tmpPathOut      = '/tmp/';
 outputFileName  = ['createsDB-' DatabaseName '.sh'];
-%% Importar dados
+%% Load configuration
+
+run('./conf/initConf.m');
+[status, RPCRUNMODE] = system('echo $RPCRUNMODE');
+
+run([HOME 'software/conf/loadGeneralConf.m']);
+%Check if this is the first time the script is run
+if(~exist([SYS 'devices'],'dir'))
+    conf = initSystem();
+    conf = loadConfiguration({conf,HOSTNAME,SYSTEMNAME,HOME,SYS,INTERPRETER,OS});
+    message2log = ['Runing dsc.m for first time and exiting.'];
+    disp(message2log);
+    write2log(conf.logs,message2log,'   ','syslog',OS);
+    return
+else
+    conf = initSystem();
+    conf = loadConfiguration({conf,HOSTNAME,SYSTEMNAME,HOME,SYS,INTERPRETER,OS});
+end
+
+%%
+for i = 1:length(conf.dev)
+    dev = conf.dev(i);
+
+    % 1. Verificar se está ativo
+    if ~isfield(dev, 'active') || dev.active == 0
+        continue; % Ignora se não estiver ativo
+    end
+
+    % 2. Verificar se é reportable
+    if ~isfield(dev, 'reportable') || dev.reportable == 0
+        continue; % Ignora se não for para leitura
+    end
+
+    % 3. Verificar se tem lookUpTable
+    if isfield(dev, 'ana') && isfield(dev.ana, 'lookUpTable')
+        LUT = dev.ana.lookUpTable;
+
+        % Exemplo: iterar pelas colunas e extrair schema/tabela
+        for col = 1:size(LUT, 2)
+            tableName = LUT{2, col}; % 2ª linha: nome da tabela
+            schema    = LUT{3, col}; % 3ª linha: nome do schema
+
+            fprintf('Schema: %s, Tabela: %s\n', schema, tableName);
+            % Aqui podes guardar ou construir a estrutura da base de dados
+        end
+    end
+end
 
 
 
-
-%% extrair os dados e convertê-los no formato necessário 
-function DB = convertLookUpToDB(lookupTables)
-    DB.schema = [];
-    for i = 1:length(lookupTables.tables)
-        DB.schema(i).name = lookupTables.tables(i).name;
-        for j = 1:size(lookupTables.tables(i).channels,1)
-            DB.schema(i).table(j).name = lookupTables.tables(i).channels{j,1};
-            DB.schema(i).table(j).type = lookupTables.tables(i).channels{j,2};
+%% convertê-los no formato necessário
+function DB = addToDB(DB, schemaName, tableName, tableType)
+    idx = find(strcmp({DB.schema.name}, schemaName));
+    if isempty(idx)
+        % Novo schema
+        newSchema.name = schemaName;
+        newSchema.table = struct('name', tableName, 'type', tableType);
+        DB.schema(end+1) = newSchema;
+    else
+        % Verifica duplicados
+        existingTables = {DB.schema(idx).table.name};
+        if ~ismember(tableName, existingTables)
+            DB.schema(idx).table(end+1).name = tableName;
+            DB.schema(idx).table(end).type = tableType;
         end
     end
 end
