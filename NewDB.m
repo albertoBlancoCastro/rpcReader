@@ -3,6 +3,7 @@
 % don't run
 % INCOMPLETO
 %% Configurações da DB
+% alterar o user password
 clear all;
 
 user            = 'ms03m2';      
@@ -33,7 +34,7 @@ else
     conf = loadConfiguration({conf,HOSTNAME,SYSTEMNAME,HOME,SYS,INTERPRETER,OS});
 end
 
-%%
+%% não funciona  
 for i = 1:length(conf.dev)
     dev = conf.dev(i);
 
