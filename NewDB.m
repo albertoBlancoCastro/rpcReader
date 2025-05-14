@@ -17,7 +17,7 @@ tmpPathOut      = '/tmp/';
 outputFileName  = ['createsDB-' DatabaseName '.sh'];
 %% Load configuration - OK
 
-run('./conf/initConf.m');
+run('./software/conf/initConf.m');
 [status, RPCRUNMODE] = system('echo $RPCRUNMODE');
 
 run([HOME 'software/conf/loadGeneralConf.m']);
@@ -34,33 +34,46 @@ else
     conf = loadConfiguration({conf,HOSTNAME,SYSTEMNAME,HOME,SYS,INTERPRETER,OS});
 end
 
-%% não funciona  - investigar origem de lookUpTables
+%%
+% verificação de legivel -OK
+% LUT não funciona  - investigar origem de lookUpTables
+
 DB = struct('schema', []); % inicializa estrutura
 
 for i = 1:length(conf.dev)
-    if isfield(conf.dev(i), "ana") && isfield(conf.dev(i).ana, "lookUpTable")
-        LUT = conf.dev(i).ana.lookUpTable;
+    dev = conf.dev(i);
 
-        for col = 1:size(LUT, 2)
-            try
-                schemaName = LUT{3, col};  % linha 3: nome do dispositivo (schema)
-                tableName  = LUT{2, col};  % linha 2: nome da variável (tabela)
-                tableType  = "REAL";       % tipo fixo para já
+    if ~deviceIsActive(dev)
+        continue;
+    end
 
-                if isempty(schemaName) || isempty(tableName)
-                    continue;
+    if ~deviceIsReadable(dev)
+        continue;
+    end
+
+    if isfield(dev, "ana") && isfield(dev.ana, "lookUpTable")
+        LUTfile = dev.ana.lookUpTable;
+
+        try  % Lê a tabela 
+            LUT = readLookUpTable(LUTfile);
+            for col = 1:size(LUT, 2)
+                try
+                    schemaName = LUT{3, col};
+                    tableName  = LUT{2, col};
+                    tableType  = "REAL";
+                    if isempty(schemaName) || isempty(tableName)
+                        continue;
+                    end
+                    DB = addToDB(DB, schemaName, tableName, tableType);
+                catch err
+                    fprintf("Erro a processar col %d do device %d: %s\n", col, i, err.message);
                 end
-
-                % Adiciona à estrutura DB
-                DB = addToDB(DB, schemaName, tableName, tableType);
-
-            catch err
-                fprintf("Erro a processar col %d do device %d: %s\n", col, i, err.message);
             end
+        catch err
+            fprintf("Erro a ler a lookup table '%s' do device %d: %s\n", LUTfile, i, err.message);
         end
     end
 end
-
 
 
 %% convertê-los no formato necessário - OK
@@ -135,7 +148,23 @@ fclose(fid);
 makeFileExecutable(fullfile(tmpPathOut, outputFileName));
 fprintf('\n=== Arquivo gerado em %s\n', fullfile(tmpPathOut, outputFileName));
 
-%% funcoes auxiliares
+%% funcoes auxiliares - OK
+function isReadable = deviceIsReadable(dev) % Verifica se o dispositivo é "readable"
+    isReadable = false;
+    if isfield(dev, 'dcs') && isfield(dev.dcs, 'readable')
+        isReadable = dev.dcs.readable == 1;
+    end
+end
+
+
+function isActive = deviceIsActive(dev) % Verifica se o dispositivo está ativo
+    isActive = false;
+    if isfield(dev, 'active')
+        isActive = dev.active == 1;
+    end
+end
+
+%% funcoes auxiliares 
 function createUser(fid, username, password)
     username= escapeSpecialCharacters(username); % future-proof: in case someone wants to create an user with chars like %,\, or '
     password= escapeSpecialCharacters(password); % future-proof: in case someone wants to create a  DB   with chars like %,\, or '
