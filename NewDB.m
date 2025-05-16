@@ -49,8 +49,7 @@ for i = 1:length(conf.dev)
         continue;
     end
 
-    if isfield(dev, 'dcs') && isfield(dev.dcs, 'path') && ...
-        isfield(dev.dcs, 'distributionLT') && isfield(dev.dcs.path, 'LT')
+    if isfield(dev, 'dcs') && isfield(dev.dcs, 'path') && isfield(dev.dcs, 'distributionLT') && isfield(dev.dcs.path, 'LT')
         LUTfile = [dev.dcs.path.LT, dev.dcs.distributionLT];
 
 
