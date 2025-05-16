@@ -1,7 +1,6 @@
 % novo - criação de base de dados a partir das configurações 
 % script para a criação automática da base de dados
-% don't run
-% INCOMPLETO
+
 %% Configurações da DB - OK
 % alterar o user password
 clear all;
@@ -35,6 +34,7 @@ else
 end
 
 %%
+% verificação de ativo -OK
 % verificação de legivel -OK
 % LUT não funciona  - investigar origem de lookUpTables
 
@@ -42,17 +42,17 @@ DB = struct('schema', []); % inicializa estrutura
 
 for i = 1:length(conf.dev)
     dev = conf.dev(i);
-
-    if ~deviceIsActive(dev)
+    if ~isfield(dev, 'dcs') || ~isfield(dev.dcs, 'active') || ~isfield(dev.dcs, 'readable')
+        continue;
+    end
+    if ~(dev.dcs.active && dev.dcs.readable)
         continue;
     end
 
-    if ~deviceIsReadable(dev)
-        continue;
-    end
+    if isfield(dev, 'dcs') && isfield(dev.dcs, 'path') && ...
+        isfield(dev.dcs, 'distributionLT') && isfield(dev.dcs.path, 'LT')
+        LUTfile = [dev.dcs.path.LT, dev.dcs.distributionLT];
 
-    if isfield(dev, "ana") && isfield(dev.ana, "lookUpTable")
-        LUTfile = dev.ana.lookUpTable;
 
         try  % Lê a tabela 
             LUT = readLookUpTable(LUTfile);
@@ -66,39 +66,38 @@ for i = 1:length(conf.dev)
                     end
                     DB = addToDB(DB, schemaName, tableName, tableType);
                 catch err
-                    fprintf("Erro a processar col %d do device %d: %s\n", col, i, err.message);
+                    fprintf("Error col %d - device %d: %s\n", col, i, err.message);
                 end
             end
         catch err
-            fprintf("Erro a ler a lookup table '%s' do device %d: %s\n", LUTfile, i, err.message);
+            fprintf("error reading '%s' - device %d: %s\n", LUTfile, i, err.message);
         end
     end
 end
-
 
 %% convertê-los no formato necessário - OK
 function DB = addToDB(DB, schemaName, tableName, tableType)
     schemaExists = false;
 
-    % Verifica se o schema já existe
+    % Check if the schema already exists
     for s = 1:length(DB.schema)
         if strcmp(DB.schema(s).name, schemaName)
             schemaExists = true;
 
-            % Verifica se tabela já existe neste schema
+            % Check if the table already exists in this schema
             tableNames = {DB.schema(s).table.name};
             if ~ismember(tableName, tableNames)
-                % Adiciona nova tabela
+                % Add new table
                 newTableIndex = length(DB.schema(s).table) + 1;
                 DB.schema(s).table(newTableIndex).name = tableName;
                 DB.schema(s).table(newTableIndex).type = tableType;
             end
 
-            return; % já tratou, sai da função
+            return; 
         end
     end
 
-    % Se o schema não existir ainda, cria novo
+    % If schema doesn't exist, create new one
     newSchemaIndex = length(DB.schema) + 1;
     DB.schema(newSchemaIndex).name = schemaName;
     DB.schema(newSchemaIndex).table(1).name = tableName;
@@ -106,7 +105,7 @@ function DB = addToDB(DB, schemaName, tableName, tableType)
 end
 
 
-%% %% Criar o arquivo .sh
+%%  Create the .sh file
 fid = fopen(fullfile(tmpPathOut, outputFileName), 'w');
 
 %fprintf(fid, 'sudo -i -u postgres\n');
@@ -116,12 +115,12 @@ createDB(fid,DatabaseName,user);
 fprintf(fid, "\nEOF\n");
 writeHeader(fid,user,password,remoteIP,DatabaseName);
 
-% % Criar os schemas
+% Create schemas
 for i = 1:length(DB.schema)
     createSchema(fid, DB.schema(i).name);
 end
 
-% Criar as tabelas dentro de cada schema
+% Create tables inside each schema
 for i = 1:length(DB.schema)
     schemaName = DB.schema(i).name;
     for j = 1:length(DB.schema(i).table)
@@ -131,40 +130,26 @@ for i = 1:length(DB.schema)
     end
 end
 
-% Permissões 
+% Permissions
 for i = 1:length(DB.schema)
     grantSelect(fid, DB.schema(i).name, grafanaUserName);
     grantUsage(fid, DB.schema(i).name, grafanaUserName);
 end
 
-% Instalar extensões
+% Install extensions
 installTableFunc(fid);
 
-% Fechar script
+% Close script
 writeFooter(fid);
 fclose(fid);
 
-% Tornar o arquivo executável
+% Make the file executable
 makeFileExecutable(fullfile(tmpPathOut, outputFileName));
 fprintf('\n=== Arquivo gerado em %s\n', fullfile(tmpPathOut, outputFileName));
 
-%% funcoes auxiliares - OK
-function isReadable = deviceIsReadable(dev) % Verifica se o dispositivo é "readable"
-    isReadable = false;
-    if isfield(dev, 'dcs') && isfield(dev.dcs, 'readable')
-        isReadable = dev.dcs.readable == 1;
-    end
-end
 
 
-function isActive = deviceIsActive(dev) % Verifica se o dispositivo está ativo
-    isActive = false;
-    if isfield(dev, 'active')
-        isActive = dev.active == 1;
-    end
-end
-
-%% funcoes auxiliares 
+%% Auxiliary functions 
 function createUser(fid, username, password)
     username= escapeSpecialCharacters(username); % future-proof: in case someone wants to create an user with chars like %,\, or '
     password= escapeSpecialCharacters(password); % future-proof: in case someone wants to create a  DB   with chars like %,\, or '
