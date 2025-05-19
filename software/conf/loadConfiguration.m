@@ -36,7 +36,8 @@ mkdirOS([SYS 'logs' b],OS,1);
 %%%% This is obsolete has to be done diferently
 name                = SYSTEMNAME;             
 [configuration, devicePos] = initNoReadableDevice({name,configuration,devicePos,SYS,OS});
-telescopePath = [configuration.dev(1).path.data 'ana' b];mkdirOS([telescopePath],OS,1);
+configuration.dev(1).ana.path.base                   = [configuration.dev(1).path.data 'ana' b];                               mkdirOS(configuration.dev(1).ana.path.base,OS,1);
+telescopePath                                        =  configuration.dev(1).ana.path.base;
 
 run([HOME 'software/conf/loadMyDevices.m']);
 
