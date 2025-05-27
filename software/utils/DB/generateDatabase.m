@@ -23,14 +23,15 @@ function generateDatabase(conf)
             LUT = readLookUpTable(LUTfile);
             for col = 1:size(LUT, 2)
                 try
-                    schemaName = LUT{3, col};
+                    devName = LUT{3, col};
+                    devsubName = LUT{4, col};
                     tableName  = LUT{2, col};
                     tableType  = "REAL";
 
-                    if isempty(schemaName) || isempty(tableName)
+                    if isempty(devName) || isempty(tableName)
                         continue;
                     end
-
+                    schemaName = [devName, devsubName];
                     DB = addToDB(DB, schemaName, tableName, tableType);
                 catch
                   
