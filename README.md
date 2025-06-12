@@ -4,6 +4,7 @@ rpcReader
 This code was made to read RPC systems (or others) for LIP RPC systems. Things to do first time.
 
 1 - Edit rpcReader/software/conf/loadMySystem.m and modify the three variables there, which are self-explanatory.
+
                       systemName     = 'backuplip';              %This is the name of the system, will be the name of the last folder on the path
                       hostName       = 'slow';                   %This is the name of the computer where software runs based on .ssh/config
                       path           = '/home/rpcuser/gate/';    %This is the path where the software is installed without systemName.
