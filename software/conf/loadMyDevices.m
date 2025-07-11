@@ -10,8 +10,8 @@ columns             = 6;                                                   %6;  
 nameFormat          = '******2024-03-01****';                              %'******2024-03-01****';           %Name of the new name. * will be removed
 distributionLT      = 'lookUpTablefRPCController.m';                       %'lookUpTablefRPCController.m';    %Lookuptable of the device
 
-[configuration, devicePos] = initReadableDevice({name,IP,fileExt,remotePath,dcData2MatScript,type,columns,nameFormat,distributionLT,configuration,devicePos,SYS,OS});
+%[configuration, devicePos] = initReadableDevice({name,IP,fileExt,remotePath,dcData2MatScript,type,columns,nameFormat,distributionLT,configuration,devicePos,SYS,OS});
 
 %% Device 02     GASSYSTEM
 name                = 'GASSYSTEM';                                         %'RPC01';                          %This is the name of the device
-[configuration, devicePos] = initNoReadableDevice({name,configuration,devicePos,SYS,OS});
+%[configuration, devicePos] = initNoReadableDevice({name,configuration,devicePos,SYS,OS});
