@@ -273,7 +273,7 @@ while done
             %Check if the FPGA with an ADC addon has always the same size,
             %if not mark the event in wrongSizeADCEvents.
             for k=1:numFPGAs
-                if(strcmp(TRBs(i).FPGAs(k,3),'TRUE') & (strcmp(TRBs(i).FPGAs(k,2),'ADC-GBE')))
+                if(strcmp(TRBs(i).FPGAs(k,3),'TRUE') && (strcmp(TRBs(i).FPGAs(k,2),'ADC-GBE') || strcmp(TRBs(i).FPGAs(k,2),'ADC')))
                     rightSize = TRBs(i).conf{k}{1}*length(TRBs(i).conf{k}{2});
                     index_wrongEvents = find(FPGASize(:,i,k) ~= rightSize);
                     if(~isempty(index_wrongEvents))
@@ -283,6 +283,11 @@ while done
                 end
             end
             
+            %Eliminate the events with invalid ADC samples
+            I = setdiff(1:numberOfEvents,wrongSizeADCEvents);
+            eventDate  = eventDate(I);
+            eventTime  = eventTime(I);
+            triggerType = triggerType(I);
             
         
         %         if(OTHER SYSTEMS)
@@ -399,10 +404,7 @@ while done
                     fineTimeEventIndex        = eventIndex(I(index4Time));
                     fineTimeCh                = channelNumber(index4Time)+1;
                     %%Always save the data from CTS HEADER
-            I = setdiff(1:numberOfEvents,wrongSizeADCEvents);
-            eventDate  = eventDate(I);
-            eventTime  = eventTime(I);
-            triggerType = triggerType(I);
+            
             if strcmp('matlab',interpreter)
                 save([pathOut{1} filename{1} '_' num2str(TRBs(i).centralFPGA) '_HEAD'  '_part' sprintf('%04d',counterFile) '.mat'],'triggerType','eventDate','eventTime');
             elseif strcmp('octave',interpreter)
@@ -515,11 +517,6 @@ while done
             end
     end
 
-    %%Always save the data from CTS HEADER
-    I = setdiff(1:numberOfEvents,wrongSizeADCEvents);
-    eventDate  = eventDate(I);
-    eventTime  = eventTime(I);
-    triggerType = triggerType(I);
     if strcmp('matlab',interpreter)
         save([pathOut{1} filename{1} '_' num2str(TRBs(i).centralFPGA) '_HEAD'  '_part' sprintf('%04d',counterFile) '.mat'],'triggerType','eventDate','eventTime');
     elseif strcmp('octave',interpreter)
