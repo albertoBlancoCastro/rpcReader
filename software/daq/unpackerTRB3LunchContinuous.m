@@ -24,6 +24,12 @@ interpreter       = conf.INTERPRETER;
 
 
 [status, result] = system(['ls -1rt ' inPath fileType]);
+if(strfind(result,'ls: cannot access'));
+    message2log = ['Unpacking warning. No valid files in ' inPath ' of type' fileType];disp(message2log);write2log(logs,message2log,'   ','syslog',OS);
+    tmpFolder = 'none';
+    return
+end
+    
 fileListRun = initFileHandler(Versioning,result,'HADES');
 
 if(size(fileListRun,1) > 1)
@@ -35,8 +41,16 @@ if(size(fileListRun,1) > 1)
         outPathTmp = [outPath tmpFolder b];
         
         mkdirOS(inPathTmp,OS,1);
-        mvOS(inPath,inPathTmp,fileListRun(1).fileNameExt,OS);
         
+        
+        if(strcmp(fileListRun(1).ext,'hld'))
+            mvOS(inPath,inPathTmp,fileListRun(1).fileNameExt,OS);
+        elseif(strcmp(fileListRun(1).ext,'tar.gz'))
+            [~, ~] = system(['tar -xzf ' inPath fileListRun(1).fileName '.tar.gz -C ' inPathTmp]);
+            [~, ~] = system(['rm ' inPath  fileListRun(1).fileNameExt]);
+        else
+        end
+                
         mkdirOS(outPathTmp,OS,1);
         [status, result] = remSemaphore(inPath,logs,OS);
     else
@@ -56,7 +70,7 @@ end
 
 
 
-[status, result] = system(['ls -1rt ' inPathTmp fileType]);
+[status, result] = system(['ls -1rt ' inPathTmp '*.hld']);
 fileListRun = initFileHandler(Versioning,result,'HADES');
 
 
@@ -85,7 +99,7 @@ try
             %%%    Check if the folder exist
             [~, ~] = system(['mkdir ' inPath 'done' b]);
             [~, ~] = system(['mv ' inPathTmp fileListRun(hldFile).fileNameExt ' ' inPath 'done' b]);
-            [~, ~] = system(['tar -czvf ' inPath 'done' b fileListRun(hldFile).fileName '.tar.gz ' inPath 'done' b fileListRun(hldFile).fileNameExt]);
+            [~, ~] = system(['tar -czvf ' inPath 'done' b fileListRun(hldFile).fileName '.tar.gz -C ' inPath 'done' b ' ' fileListRun(hldFile).fileNameExt]);
             [~, ~] = system(['rm ' inPath 'done' b fileListRun(hldFile).fileNameExt]);
             
             message2log = ['Moving to done and zip on location: ' inPath 'done ' fileListRun(hldFile).fileNameExt];
