@@ -21,8 +21,11 @@ run([lookUpTables systemName 'export2asic.m']);
 fclose(fp);
 
 if zipOutput
-    [~, ~] = system(['cd ' outPath '; tar -czvf ./'  name2Open '.tar.gz ./' name2Open ';cd -']);
+    [~, ~] = system(['tar -czvf ' outPath  name2Open '.tar.gz -C ' outPath ' ' name2Open ';']);
     [~, ~] = system(['rm -r ' file2Open]);
 end
 
 return
+
+
+['tar -czvf ' inPath 'done' b fileListRun(hldFile).fileName '.tar.gz -C ' inPath 'done' b ' ' fileListRun(hldFile).fileNameExt]

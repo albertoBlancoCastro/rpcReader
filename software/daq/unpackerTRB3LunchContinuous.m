@@ -24,13 +24,15 @@ interpreter       = conf.INTERPRETER;
 
 
 [status, result] = system(['ls -1rt ' inPath fileType]);
-if(strfind(result,'ls: cannot access'));
+
+if(status == 2)
     message2log = ['Unpacking warning. No valid files in ' inPath ' of type' fileType];disp(message2log);write2log(logs,message2log,'   ','syslog',OS);
     tmpFolder = 'none';
     return
 end
-    
+
 fileListRun = initFileHandler(Versioning,result,'HADES');
+
 
 if(size(fileListRun,1) > 1)
     [status, result] = setSemaphore(inPath,logs,OS);
@@ -39,18 +41,25 @@ if(size(fileListRun,1) > 1)
         tmpFolder  = ['tmp_' fileListRun(1).fileName];
         inPathTmp  = [inPath  tmpFolder b];
         outPathTmp = [outPath tmpFolder b];
-        
+
         mkdirOS(inPathTmp,OS,1);
-        
-        
+
         if(strcmp(fileListRun(1).ext,'hld'))
             mvOS(inPath,inPathTmp,fileListRun(1).fileNameExt,OS);
-        elseif(strcmp(fileListRun(1).ext,'tar.gz'))
-            [~, ~] = system(['tar -xzf ' inPath fileListRun(1).fileName '.tar.gz -C ' inPathTmp]);
+        elseif(strfind(fileListRun(1).ext,'.gz'))
+            [~, ~] = system(['tar -xzf ' inPath fileListRun(1).fileNameExt ' -C ' inPathTmp]);
+
+            %%% This is a patch to overcome years of compression including path
+            [status, result] = system(['ls ' inPath '*.hld']);
+            if(status == 2)
+               [~, ~] = system(['find ' inPathTmp ' -type f -name *.hld -exec mv -i {} ' inPathTmp ' \;']);
+            end
+            %%% End of patch
+
             [~, ~] = system(['rm ' inPath  fileListRun(1).fileNameExt]);
         else
         end
-                
+
         mkdirOS(outPathTmp,OS,1);
         [status, result] = remSemaphore(inPath,logs,OS);
     else
@@ -78,10 +87,10 @@ try
     for hldFile=1
         fileName = fileListRun(hldFile).fileName;
         message2log = ['Unpacking file ' fileName];disp(message2log);write2log(logs,message2log,'   ','syslog',OS);
-        
-        
+
+
         errorType = unpackTRB3({inPathTmp},{outPathTmp},{fileName},TRBs,bufferSize,writeTDCCal,interpreter,OS);
-        
+
         % Deal with the error during unpacking
         if(strcmp(errorType,'No events'))
             %Cause -> No events inside of hld file
@@ -93,7 +102,7 @@ try
         else
             %nothing to do
         end
-        
+
         %%%What to do with the file in origing
         if(zipFiles)     %keep the file, move to done and zip
             %%%    Check if the folder exist
@@ -101,7 +110,7 @@ try
             [~, ~] = system(['mv ' inPathTmp fileListRun(hldFile).fileNameExt ' ' inPath 'done' b]);
             [~, ~] = system(['tar -czvf ' inPath 'done' b fileListRun(hldFile).fileName '.tar.gz -C ' inPath 'done' b ' ' fileListRun(hldFile).fileNameExt]);
             [~, ~] = system(['rm ' inPath 'done' b fileListRun(hldFile).fileNameExt]);
-            
+
             message2log = ['Moving to done and zip on location: ' inPath 'done ' fileListRun(hldFile).fileNameExt];
             disp(message2log);
             write2log(logs,message2log,'   ','syslog',OS);
@@ -109,33 +118,33 @@ try
             %%%    Check if the folder exist
             [~, ~] = system(['mkdir ' inPath 'done' b]);
             [~, ~] = system(['mv ' inPathTmp fileListRun(hldFile).fileNameExt ' ' inPath 'done' b]);
-            
+
             message2log = ['Moving to done on location: ' inPath 'done ' fileListRun(hldFile).fileNameExt];
             disp(message2log);
             write2log(logs,message2log,'   ','syslog',OS);
-            
+
         else            %delete the file
-            rmOS(inPathTmp,fileListRun(hldFile).fileNameExt,OS)
+            [~, ~] = system(['rm ' inPathTmp fileListRun(hldFile).fileNameExt]);
             message2log = ['Deleting on  location: ' inPath 'done ' fileListRun(hldFile).fileNameExt];
             disp(message2log);
             write2log(logs,message2log,'   ','syslog',OS);
         end
         %%%%%%%%%%%%%
-        
-        [~, ~] = system(['rmdir ' inPathTmp]);
-        
+
+        [~, ~] = system(['rm -r ' inPathTmp]);
+
         message2log = ['Unpacking done'];disp(message2log);write2log(logs,message2log,'   ','syslog',OS);
     end
 catch exception
-    
+
     for i = 1:length(exception.stack)
         message2log = ['Error in: ' exception.stack(i).file ' line ' num2str(exception.stack(i).line)];
         disp(message2log);
         write2log(logs,message2log,'   ','syslog',OS);
         write2log(logs,message2log,'   ','criticallog',OS);
     end
-    
-    
+
+
     %Send alarm
     inputvars = {alarms(locateAlarm('unpacking',alarms)),message2log};sendAlarm(inputvars);
 end

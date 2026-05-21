@@ -46,6 +46,22 @@ elseif(findVersion(scriptVersions,'hadesName2Date') == 3)
     
     [dayOfTheMonth,month] = HADESDate2Date(yyFromFile,ddFromFile);
     matDate = datenum([str2num(['20' num2str(yyFromFile)]) month dayOfTheMonth  hourFromFile  mmFromFile ssFromFile]);
+    
+elseif(findVersion(scriptVersions,'hadesName2Date') == 4)
+    %The HADESData is always 11 digitis before the first dot. 
+    dotPosition   = strfind(fileName,'.');
+    fDotPosition  = dotPosition(1);
+    
+    hadesDate     = fileName(fDotPosition-11:fDotPosition-1);
+    
+    yyFromFile    = str2num(hadesDate(1:2));
+    ddFromFile    = str2num(hadesDate(3:5));
+    hourFromFile  = str2num(hadesDate(6:7));
+    mmFromFile    = str2num(hadesDate(8:9));
+    ssFromFile    = str2num(hadesDate(10:11));
+    
+    [dayOfTheMonth,month] = HADESDate2Date(yyFromFile,ddFromFile);
+    matDate = datenum([str2num(['20' num2str(yyFromFile)]) month dayOfTheMonth  hourFromFile  mmFromFile ssFromFile]);
 
 else
     keyboard
