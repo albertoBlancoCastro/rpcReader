@@ -132,9 +132,9 @@ elseif(findVersion(scriptVersions,'initFileHandler') == 3)
         
         myFiles(i).fullName         = inputFiles_;
         myFiles(i).inPath           = inputFiles_(1:index2(end));
-        myFiles(i).fileName         = inputFiles__(1:(index3-1));
+        myFiles(i).fileName         = inputFiles__(1:(index3(1)-1));
         myFiles(i).fileNameExt      = inputFiles__;
-        myFiles(i).ext              = inputFiles__((index3+1):end);
+        myFiles(i).ext              = inputFiles__((index3(1)+1):end);
         if (strcmp(type,'HADES'))
                 myFiles(i).hadesDate = hadesName2Date(scriptVersions,myFiles(i).fileNameExt);
                 myFiles(i).Date      = hadesName2Date(scriptVersions,myFiles(i).fileNameExt);

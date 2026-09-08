@@ -50,7 +50,7 @@ if(size(fileListRun,1) > 1)
             [~, ~] = system(['tar -xzf ' inPath fileListRun(1).fileNameExt ' -C ' inPathTmp]);
 
             %%% This is a patch to overcome years of compression including path
-            [status, result] = system(['ls ' inPath '*.hld']);
+            [status, result] = system(['ls ' inPathTmp '*.hld']);
             if(status == 2)
                [~, ~] = system(['find ' inPathTmp ' -type f -name *.hld -exec mv -i {} ' inPathTmp ' \;']);
             end
