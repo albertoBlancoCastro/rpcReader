@@ -34,13 +34,13 @@ if(strcmp(result,'manta'))
 
         % syncSoftware.sh
         [status, result] = system('echo ''#!/bin/sh'' > ../../localbin/syncSoftware.sh');
-        [status, result] = system('echo rsync   -vrltgoD --delete                       ''$RPCLOCALPATH''/bin/*.*                               ''$RPCREMOTECOMPUTER'':''$RPCREMOTEPATH''/bin/                         >> ../../localbin/syncSoftware.sh');
-        [status, result] = system('echo rsync   -vrltgoD --delete                       ''$RPCLOCALPATH''/software/*.m                          ''$RPCREMOTECOMPUTER'':''$RPCREMOTEPATH''/software/                 >> ../../localbin/syncSoftware.sh');
-        [status, result] = system('echo rsync   -vrltgoD --delete                       ''$RPCLOCALPATH''/software/ana/                         ''$RPCREMOTECOMPUTER'':''$RPCREMOTEPATH''/software/ana/             >> ../../localbin/syncSoftware.sh');
-        [status, result] = system('echo rsync   -vrltgoD --delete                       ''$RPCLOCALPATH''/software/daq/                         ''$RPCREMOTECOMPUTER'':''$RPCREMOTEPATH''/software/daq/             >> ../../localbin/syncSoftware.sh');
-        [status, result] = system('echo rsync   -vrltgoD --delete                       ''$RPCLOCALPATH''/software/dc/                          ''$RPCREMOTECOMPUTER'':''$RPCREMOTEPATH''/software/dc/              >> ../../localbin/syncSoftware.sh');
-        [status, result] = system('echo rsync   -vrltgoD --delete                       ''$RPCLOCALPATH''/software/utils/                       ''$RPCREMOTECOMPUTER'':''$RPCREMOTEPATH''/software/utils/           >> ../../localbin/syncSoftware.sh');
-        [status, result] = system('echo rsync   -vrltgoD --delete  --exclude "''data''" ''$RPCLOCALPATH''/software/conf/                        ''$RPCREMOTECOMPUTER'':''$RPCREMOTEPATH''/software/conf/            >> ../../localbin/syncSoftware.sh');
+        [status, result] = system('echo rsync   -vrltgoD --delete  $1  $2                        ''$RPCLOCALPATH''/bin/*.*                               ''$RPCREMOTECOMPUTER'':''$RPCREMOTEPATH''/bin/                         >> ../../localbin/syncSoftware.sh');
+        [status, result] = system('echo rsync   -vrltgoD --delete  $1  $2                        ''$RPCLOCALPATH''/software/*.m                          ''$RPCREMOTECOMPUTER'':''$RPCREMOTEPATH''/software/                 >> ../../localbin/syncSoftware.sh');
+        [status, result] = system('echo rsync   -vrltgoD --delete  $1  $2                        ''$RPCLOCALPATH''/software/ana/                         ''$RPCREMOTECOMPUTER'':''$RPCREMOTEPATH''/software/ana/             >> ../../localbin/syncSoftware.sh');
+        [status, result] = system('echo rsync   -vrltgoD --delete  $1  $2                        ''$RPCLOCALPATH''/software/daq/                         ''$RPCREMOTECOMPUTER'':''$RPCREMOTEPATH''/software/daq/             >> ../../localbin/syncSoftware.sh');
+        [status, result] = system('echo rsync   -vrltgoD --delete  $1  $2                        ''$RPCLOCALPATH''/software/dc/                          ''$RPCREMOTECOMPUTER'':''$RPCREMOTEPATH''/software/dc/              >> ../../localbin/syncSoftware.sh');
+        [status, result] = system('echo rsync   -vrltgoD --delete  $1  $2                        ''$RPCLOCALPATH''/software/utils/                       ''$RPCREMOTECOMPUTER'':''$RPCREMOTEPATH''/software/utils/           >> ../../localbin/syncSoftware.sh');
+        [status, result] = system('echo rsync   -vrltgoD --delete  $1  $2   --exclude "''data''" ''$RPCLOCALPATH''/software/conf/                        ''$RPCREMOTECOMPUTER'':''$RPCREMOTEPATH''/software/conf/            >> ../../localbin/syncSoftware.sh');
         [status, result] = system(['chmod u+x ../../localbin/syncSoftware.sh']);
     end
 else
