@@ -86,7 +86,7 @@ daq.subName                             = '3';
     daq.unpacking.keepHLDs              = 1;
     daq.unpacking.zipFiles              = 1;                               %keep data on origing and compress
     daq.unpacking.writeTDCCal           = 0;
-    daq.unpacking.downScale             = 5;                               %1 is no downScale
+    daq.unpacking.downScale             = 5;                               %1 is no downScale. If present it will unpack jumping this number and not sequentially.
     
     daq.raw2var.path.base               = [daq.path.data 'daqData' b];                           mkdirOS([daq.raw2var.path.base],OS,1);
     daq.raw2var.path.varData            = [daq.unpacking.path.base 'varData' b];                 mkdirOS([daq.raw2var.path.varData],OS,1);mkdirOS([daq.raw2var.path.varData 'done' b],OS,1);
