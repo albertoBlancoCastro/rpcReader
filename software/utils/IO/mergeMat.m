@@ -19,6 +19,7 @@ function mergeMat(varargin)
 %%%  A merge doing the sum
 %%%  M merge doing the average
 %%%  RS merge in row for sparse. This optimize the memory
+%%%  wvf merge 3D matrix
 %%%  Version 1 2021-04-26
 
 
@@ -108,7 +109,8 @@ if (findVersion(scriptVersions,'mergeMat') == 1)
                     else
                         eval([varargin{j}{1} '_ = (' varargin{j}{1} ' + '  varargin{j}{1} '_)/2;']);
                     end
-                    
+                case 'wvf'
+                        eval([varargin{j}{1} '_ = cat(3,' varargin{j}{1} '_,' varargin{j}{1} ');']);   
             end
             
             
